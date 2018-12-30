@@ -28,3 +28,8 @@ Contribution is very welcome! If you didn't contribute before,
 just filter for issues with "easy" or "good first issue" label.
 Please note that your contributions are assumed to be dual-licensed under Apache-2.0/MIT.
 
+# License
+
+`system-graph` is distributed under the terms of both the MIT license and the Apache License (Version 2.0).
+
+See LICENSE-APACHE and LICENSE-MIT.
