@@ -1,0 +1,19 @@
+[package]
+name = "system-graph"
+version = "0.1.0"
+authors = ["Thomas Schaller <torkleyy@gmail.com>"]
+edition = "2018"
+description = """
+system-graph is an experimental alternative for shred's Dispatcher.
+"""
+documentation = "https://docs.rs/system-graph/"
+repository = "https://github.com/slide-rs/system-graph"
+readme = "README.md"
+keywords = ["gamedev", "ecs", "system", "graph"]
+categories = ["concurrency"]
+license = "MIT/Apache-2.0"
+authors = ["slide-rs hackers"]
+exclude = ["bors.toml", ".travis.yml"]
+
+[dependencies]
+

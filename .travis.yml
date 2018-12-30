@@ -1,0 +1,27 @@
+language: rust
+rust:
+- nightly
+- beta
+- stable
+
+cache:
+  cargo: true
+
+branches:
+  only:
+    - staging
+    - trying
+    - master
+
+before_script:
+- export PATH="$PATH:$HOME/.cargo/bin"
+
+script:
+- cargo build --verbose
+- cargo test --verbose
+- if [ "$TRAVIS_RUST_VERSION" == "nightly" ]; then
+    cargo build --all-features --verbose;
+    cargo test --all-features --verbose;
+    cargo bench --verbose --no-run --all-features;
+  fi
+
