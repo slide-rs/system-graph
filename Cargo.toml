@@ -1,7 +1,6 @@
 [package]
 name = "system-graph"
 version = "0.1.0"
-authors = ["Thomas Schaller <torkleyy@gmail.com>"]
 edition = "2018"
 description = """
 system-graph is an experimental alternative for shred's Dispatcher.
