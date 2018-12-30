@@ -2,8 +2,8 @@
 
 [![Build Status][bi]][bl] [![Crates.io][ci]][cl] [![Gitter][gi]][gl] ![MIT/Apache][li] [![Docs.rs][di]][dl] ![LoC][lo]
 
-[bi]: https://travis-ci.org/slide-rs/system-graph.svg?branch=master
-[bl]: https://travis-ci.org/slide-rs/system-graph
+[bi]: https://travis-ci.com/slide-rs/system-graph.svg?branch=master
+[bl]: https://travis-ci.com/slide-rs/system-graph
 
 [ci]: https://img.shields.io/crates/v/system-graph.svg
 [cl]: https://crates.io/crates/system-graph/
