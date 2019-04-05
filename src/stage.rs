@@ -179,7 +179,8 @@ impl<'a> StagesBuilder<'a> {
         f: &mut fmt::Formatter,
         map: &FxHashMap<String, SystemId>,
     ) -> fmt::Result {
-        let map: FxHashMap<_, _> = map.iter()
+        let map: FxHashMap<_, _> = map
+            .iter()
             .map(|(key, value)| (*value, key as &str))
             .collect();
 
@@ -409,9 +410,7 @@ mod tests {
     #[test]
     fn conflict_rw() {
         let ids = create_ids(&[&[&[0], &[1]]]);
-        let reads = create_reads(&[
-            &[&[ResourceId::new::<ResA>()], &[ResourceId::new::<ResB>()]],
-        ]);
+        let reads = create_reads(&[&[&[ResourceId::new::<ResA>()], &[ResourceId::new::<ResB>()]]]);
         let writes = create_writes(&[&[&[], &[]]]);
 
         let conflict = StagesBuilder::find_conflict(
@@ -447,9 +446,8 @@ mod tests {
     #[test]
     fn conflict_ww_multi() {
         let ids = create_ids(&[&[&[0], &[1]]]);
-        let reads = create_reads(&[
-            &[&[ResourceId::new::<ResA>(), ResourceId::new::<ResC>()], &[]],
-        ]);
+        let reads =
+            create_reads(&[&[&[ResourceId::new::<ResA>(), ResourceId::new::<ResC>()], &[]]]);
         let writes = create_writes(&[&[&[], &[ResourceId::new::<ResB>()]]]);
 
         let conflict = StagesBuilder::find_conflict(
