@@ -1,7 +1,6 @@
 use smallvec::SmallVec;
 
-use shred::Resources;
-use shred::RunNow;
+use shred::{Resources, RunNow};
 
 use crate::stage::Stage;
 
@@ -14,8 +13,8 @@ pub struct SystemGraph<'systems> {
 }
 
 impl<'systems> SystemGraph<'systems> {
-    /// Sets up all the systems which means they are gonna add default values for the resources
-    /// they need.
+    /// Sets up all the systems which means they are gonna add default values
+    /// for the resources they need.
     pub fn setup(&mut self, res: &mut Resources) {
         for stage in &mut self.stages {
             stage.setup(res);
