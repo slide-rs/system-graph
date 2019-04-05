@@ -1,8 +1,6 @@
 
-pub use self::builder::DispatcherBuilder;
-pub use self::dispatcher::Dispatcher;
+pub use self::system_graph::SystemGraph;
 
-mod builder;
-mod dispatcher;
+mod system_graph;
 mod stage;
 mod util;

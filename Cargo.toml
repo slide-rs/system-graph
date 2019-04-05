@@ -23,3 +23,7 @@ smallvec = "0.6"
 
 [dev-dependencies]
 shred-derive = "0.5.1"
+
+[features]
+default = ["parallel"]
+parallel = []

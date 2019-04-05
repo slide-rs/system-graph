@@ -38,7 +38,7 @@ use shred::{ResourceId, Resources};
 use shred::{RunningTime, System};
 use smallvec::SmallVec;
 
-use crate::dispatcher::{SystemExecSend, SystemId};
+use crate::system_graph::{SystemExecSend, SystemId};
 use crate::util::check_intersection;
 
 const MAX_SYSTEMS_PER_GROUP: usize = 5;

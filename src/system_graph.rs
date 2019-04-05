@@ -7,23 +7,18 @@ use crate::stage::Stage;
 
 /// The dispatcher struct, allowing
 /// systems to be executed in parallel.
-pub struct Dispatcher<'a, 'b> {
-    stages: Vec<Stage<'a>>,
-    thread_local: ThreadLocal<'b>,
+pub struct SystemGraph<'systems> {
+    stages: Vec<Stage<'systems>>,
     #[cfg(feature = "parallel")]
     thread_pool: ::std::sync::Arc<::rayon::ThreadPool>,
 }
 
-impl<'a, 'b> Dispatcher<'a, 'b> {
+impl<'systems> SystemGraph<'systems> {
     /// Sets up all the systems which means they are gonna add default values for the resources
     /// they need.
     pub fn setup(&mut self, res: &mut Resources) {
         for stage in &mut self.stages {
             stage.setup(res);
-        }
-
-        for sys in &mut self.thread_local {
-            sys.setup(res);
         }
     }
 
@@ -32,13 +27,12 @@ impl<'a, 'b> Dispatcher<'a, 'b> {
     ///
     /// This function automatically redirects to
     ///
-    /// * [`dispatch_par`] in case it is supported
-    /// * [`dispatch_seq`] otherwise
+    /// * [`dispatch_seq`] in case the `parallel` feature is disabled
     ///
-    /// and runs `dispatch_thread_local` afterwards.
+    /// Otherwise, it simply runs in parallel.
     ///
     /// Please note that this method assumes that no resource
-    /// is currently borrowed. If that's the case, it panics.
+    /// is currently borrowed. Otherwise, it panics.
     ///
     /// [`dispatch_par`]: struct.Dispatcher.html#method.dispatch_par
     /// [`dispatch_seq`]: struct.Dispatcher.html#method.dispatch_seq
@@ -48,22 +42,10 @@ impl<'a, 'b> Dispatcher<'a, 'b> {
 
         #[cfg(not(feature = "parallel"))]
         self.dispatch_seq(res);
-
-        self.dispatch_thread_local(res);
     }
 
-    /// Dispatches the systems (except thread local systems)
-    /// in parallel given the resources to operate on.
-    ///
-    /// This operation blocks the
-    /// executing thread.
-    ///
-    /// Only available with "parallel" feature enabled.
-    ///
-    /// Please note that this method assumes that no resource
-    /// is currently borrowed. If that's the case, it panics.
     #[cfg(feature = "parallel")]
-    pub fn dispatch_par(&mut self, res: &Resources) {
+    fn dispatch_par(&mut self, res: &Resources) {
         let stages = &mut self.stages;
 
         self.thread_pool.install(move || {
@@ -76,23 +58,13 @@ impl<'a, 'b> Dispatcher<'a, 'b> {
     /// Dispatches the systems (except thread local systems) sequentially.
     ///
     /// This is useful if parallel overhead is
-    /// too big or the platform does not support multithreading.
+    /// too big or the platform does not support multi-threading.
     ///
     /// Please note that this method assumes that no resource
     /// is currently borrowed. If that's the case, it panics.
     pub fn dispatch_seq(&mut self, res: &Resources) {
         for stage in &mut self.stages {
             stage.execute_seq(res);
-        }
-    }
-
-    /// Dispatch only thread local systems sequentially.
-    ///
-    /// Please note that this method assumes that no resource
-    /// is currently borrowed. If that's the case, it panics.
-    pub fn dispatch_thread_local(&mut self, res: &Resources) {
-        for sys in &mut self.thread_local {
-            sys.run_now(res);
         }
     }
 
@@ -108,7 +80,7 @@ impl<'a, 'b> Dispatcher<'a, 'b> {
     }
 }
 
-impl<'a, 'b, 'c> RunNow<'a> for Dispatcher<'b, 'c> {
+impl<'a, 'systems> RunNow<'a> for SystemGraph<'systems> {
     fn run_now(&mut self, res: &Resources) {
         self.dispatch(res);
     }
@@ -125,26 +97,22 @@ pub type SystemExecSend<'b> = Box<for<'a> RunNow<'a> + Send + 'b>;
 pub type ThreadLocal<'a> = SmallVec<[Box<for<'b> RunNow<'b> + 'a>; 4]>;
 
 #[cfg(feature = "parallel")]
-pub fn new_dispatcher<'a, 'b>(
-    stages: Vec<Stage<'a>>,
-    thread_local: ThreadLocal<'b>,
+pub fn new_dispatcher(
+    stages: Vec<Stage>,
     thread_pool: ::std::sync::Arc<::rayon::ThreadPool>,
-) -> Dispatcher<'a, 'b> {
-    Dispatcher {
+) -> SystemGraph {
+    SystemGraph {
         stages,
-        thread_local,
         thread_pool,
     }
 }
 
 #[cfg(not(feature = "parallel"))]
-pub fn new_dispatcher<'a, 'b>(
-    stages: Vec<Stage<'a>>,
-    thread_local: ThreadLocal<'b>,
-) -> Dispatcher<'a, 'b> {
-    Dispatcher {
+pub fn new_dispatcher(
+    stages: Vec<Stage>,
+) -> SystemGraph {
+    SystemGraph {
         stages,
-        thread_local,
     }
 }
 
@@ -153,7 +121,7 @@ mod tests {
     use super::*;
     use shred::System;
     use shred::Write;
-    use crate::DispatcherBuilder;
+    use crate::SystemGraphBuilder;
 
     #[derive(Default)]
     struct Res(i32);
@@ -188,8 +156,8 @@ mod tests {
         }
     }
 
-    fn new_builder() -> DispatcherBuilder<'static, 'static> {
-        DispatcherBuilder::new()
+    fn new_builder() -> SystemGraphBuilder<'static, 'static> {
+        SystemGraphBuilder::new()
             .with(Dummy(0), "0", &[])
             .with(Dummy(1), "1", &[])
             .with(Dummy(2), "2", &[])
@@ -209,7 +177,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "Propagated panic")]
     fn dispatcher_panics() {
-        DispatcherBuilder::new()
+        SystemGraphBuilder::new()
             .with(Panic, "p", &[])
             .build()
             .dispatch(&mut new_resources())
